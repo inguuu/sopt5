@@ -18,14 +18,20 @@ router.post('/', upload.array('infoImg'), async (req, res) => {
         res.status(200).send(defaultRes.successFalse(statusCode.NO_CONTENT, resMessage.NOT_CORRECT_THUMB_ID));
     }
     else{
-        if(req.body.infoContent.length==req.files.length){//내용의 수와 이미지 수가 같아야만 저장 1대1
-            for (let i = 0; i < req.body.infoContent.length; i++) {
+        var contentSize =0;
+        if(typeof(req.body.infoContent)=='string'){
+            contentSize=1;
+        }
+        else if(typeof(req.body.infoContent)=='object'){
+            contentSize=req.body.infoContent.length;
+        }
+        if(contentSize==req.files.length){//내용의 수와 이미지 수가 같아야만 저장 1대1
+            for (let i = 0; i <contentSize; i++) {
                 insertInfoQuery=
                 'INSERT INTO info (infoIdx,infoImg,infoContent) VALUES (?,?,?)';
                 insertInfoResult = await db.queryParam_Parse(insertInfoQuery, 
                  [req.body.infoIdx, req.files[i].location, req.body.infoContent[i]]);
-            }
-            
+            }   
             if (!insertInfoResult) {
                 res.status(200).send(defaultRes.successFalse(statusCode.DB_ERROR, resMessage.INFO_INSERT_FAIL));
             } else { //쿼리문이 성공했을 때
